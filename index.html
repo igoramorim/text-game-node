@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Real Time Text Game</title>
+		<!--<link href="./style.css" rel="stylesheet" type="text/css" />-->
+		<link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+		<style>
+		
+		</style>
+		
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script type="text/javascript">
+			window.onload = function() {
+				var socket = io();
+				var welcome = document.getElementById("welcome");
+				var allUsers = document.getElementById("users");
+				var currentLetter = document.getElementById("currentLetter");
+				var wordsRemaining = document.getElementById("wordsRemaining");
+				var initialLetter = document.getElementById("initialLetter");
+				var log = document.getElementById("log");
+				var sendBtn = document.getElementById("sendBtn");
+				var passBtn = document.getElementById("passBtn");
+				var inputField = document.getElementById("inputField");
+				var userName = '';
+				
+				var enableUser = function(){
+					sendBtn.disabled = false;
+					passBtn.disabled = false;
+					inputField.disabled = false;
+					inputField.focus();
+				}
+				
+				var disableUser = function(){
+					sendBtn.disabled = true;
+					passBtn.disabled = true;
+					inputField.disabled = true;
+				}
+				
+				disableUser();
+				
+				socket.on('welcome', function(data){
+					console.log(data);
+					userName = data.name;
+					welcome.innerHTML = "<h3>Welcome <strong>" + data.name + "</strong></h3> <h5>Status: " + data.points + " points " + data.fails + " fails</h5";
+				});
+				socket.on('startGame', function(data){
+					console.log("startGame: " + data);
+					if(userName === data){
+						console.log("primeiro a conectar");
+						enableUser();
+					}else{
+						disableUser();
+					}
+				});
+				socket.on('users', function(data){
+					allUsers.innerHTML = data.users;
+				});
+				socket.on('wordsRemaining', function(data){
+					wordsRemaining.innerHTML = data;
+				});
+				socket.on('initialLetter', function(data){
+					initialLetter.innerHTML = data;
+				});
+				socket.on('updateLog', function(data){
+					log.innerHTML = data;
+				});
+				socket.on('updateCurrentLetter', function(data){
+					currentLetter.innerHTML = data;
+				});
+				socket.on('updateCurrentUser', function(data){
+					if(userName === data){
+						//console.log("nomes iguais");
+						socket.emit("currentUser");
+					}
+					else{
+						//console.log("nomes diferentes");
+						socket.emit("notCurrentUser");
+					}
+					//console.log("userName: " + userName + "str recebida: " + data);
+				});
+				socket.on('disableUser', function(){
+					disableUser();
+				});
+				socket.on('enableUser', function(){
+					enableUser();
+				});
+				sendBtn.onclick = function(){
+					var word = document.getElementById("inputField").value.toLowerCase();
+					socket.emit("checkWord", word);
+					inputField.value = "";
+				}
+				passBtn.onclick = function(){
+					socket.emit("pass");
+					inputField.value = "";
+				}
+				socket.on('gameOver', function(data){
+					console.log("recebido game over: " + data);
+					alert("GAME OVER YO!\n" + data.name + " ganhou com " + data.points + " pontos");
+				});
+			}
+		</script>
+	</head>
+	
+	<body>		
+		<div class="w3-row">
+			<div class="w3-container w3-center w3-third">
+				<h5>palavras disponíveis</h5>
+				<h2 id="initialLetter">10</h2> 
+			</div>
+			<div class="w3-container w3-center w3-third">
+				<h5>palavras restantes</h5>
+				<h2 id="wordsRemaining">10</h2> 
+			</div>
+			<div id="welcome" class="w3-container w3-third">
+				<h2>status jogador</h2>
+			</div>
+			
+			<div class="w3-container w3-center w3-twothird">
+				</br><hr></br>
+				<h5>letra da rodada</h5>
+				<div class="w3-jumbo w3-text-pink" id="currentLetter">A</div>
+				<h5 id="log"><i>Jogador X digitou / passou</i></h5>
+				</br><hr></br>
+				<input id="inputField" class="w3-input w3-center" type="text" placeholder="type your word here">
+				<p></p>
+				<div class="w3-btn-bar w3-border w3-center w3-show-inline-block">
+					<button id="sendBtn" class="w3-btn w3-green" style="width:80px">send</button>
+					<button id="passBtn" class="w3-btn w3-red" style="width:80px">x</button>
+				</div>
+			</div>
+			<div class="w3-container w3-third">
+				<h3>Players</h3>
+				<ul id="users" class="w3-ul w3-hoverable">
+					
+				</ul>
+			</div>
+		</div>	
+	</body>
+</html>
