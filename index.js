@@ -75,7 +75,8 @@ io.on('connection', function(socket){
 	
 });
 
-http.listen(3000, function(){
+var porta = process.env.PORT || 3000;
+http.listen(porta, function(){
 	console.log('listening on *:3000\n');
 });
 
