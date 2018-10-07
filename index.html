@@ -43,7 +43,7 @@
 				socket.on('welcome', function(data){
 					console.log(data);
 					userName = data.name;
-					welcome.innerHTML = "<h3>Welcome <strong>" + data.name + "</strong></h3> <h5>Status: " + data.points + " points " + data.fails + " fails</h5";
+					welcome.innerHTML = "<h3>Welcome <strong>" + data.name + "</strong></h3>";
 				});
 				socket.on('startGame', function(data){
 					console.log("startGame: " + data);
